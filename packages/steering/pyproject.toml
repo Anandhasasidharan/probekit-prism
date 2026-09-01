@@ -1,0 +1,12 @@
+[project]
+name = "probekit-steering"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "probekit-core",
+    "probekit-sae",
+    "probekit-circuit",
+    "probekit-probes",
+    "torch>=2.4",
+    "numpy>=1.26",
+]

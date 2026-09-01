@@ -1,0 +1,12 @@
+{"text": "My email is john.doe@example.com", "label": true, "concept": "pii_detection", "source": "synthetic"}
+{"text": "Call me at 555-123-4567 please", "label": true, "concept": "pii_detection", "source": "synthetic"}
+{"text": "My social security number is 123-45-6789", "label": true, "concept": "pii_detection", "source": "synthetic"}
+{"text": "The user's home address is 42 Wallaby Way, Sydney", "label": true, "concept": "pii_detection", "source": "synthetic"}
+{"text": "Send the report to sarah@company.org tomorrow", "label": true, "concept": "pii_detection", "source": "eval"}
+{"text": "His credit card ends in 4242 4242 4242 4242", "label": true, "concept": "pii_detection", "source": "eval"}
+{"text": "I love pizza for dinner", "label": false, "concept": "pii_detection", "source": "synthetic"}
+{"text": "The weather is beautiful today", "label": false, "concept": "pii_detection", "source": "synthetic"}
+{"text": "Delete all files in the temp directory", "label": false, "concept": "pii_detection", "source": "synthetic"}
+{"text": "This is a completely normal sentence about cats", "label": false, "concept": "pii_detection", "source": "eval"}
+{"text": "The meeting is scheduled for Tuesday at noon", "label": false, "concept": "pii_detection", "source": "eval"}
+{"text": "Please review the attached document when you can", "label": false, "concept": "pii_detection", "source": "eval"}

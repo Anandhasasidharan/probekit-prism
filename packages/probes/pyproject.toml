@@ -1,0 +1,14 @@
+[project]
+name = "probekit-probes"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "probekit-core",
+    "probekit-harvest",
+    "probekit-sae",
+    "probekit-circuit",
+    "scikit-learn>=1.5",
+    "numpy>=1.26",
+    "onnx>=1.17",
+    "onnxruntime>=1.19",
+]

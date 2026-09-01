@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+dist/
+build/
+
+# Data (activations, models, probes)
+data/activations/*
+data/probes/*
+data/saes/*
+data/features/*
+!data/activations/.gitkeep
+!data/probes/.gitkeep
+!data/saes/.gitkeep
+!data/features/.gitkeep
+
+# Environment
+.env
+*.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# uv

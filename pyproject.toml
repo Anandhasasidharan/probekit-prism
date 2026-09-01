@@ -1,0 +1,74 @@
+[project]
+name = "probekit"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "torch>=2.13.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "pytest-timeout>=2.3",
+    "ruff>=0.7",
+    "mypy>=1.13",
+    "pre-commit>=4.0",
+    "httpx>=0.28",
+]
+
+[tool.uv.workspace]
+members = [
+    "packages/core",
+    "packages/harvest",
+    "packages/sae",
+    "packages/circuit",
+    "packages/auto-interp",
+    "packages/probes",
+    "packages/steering",
+    "packages/registry",
+    "packages/monitor",
+    "packages/api",
+]
+
+[tool.uv.sources]
+probekit-core = { workspace = true }
+probekit-harvest = { workspace = true }
+probekit-sae = { workspace = true }
+probekit-circuit = { workspace = true }
+probekit-auto-interp = { workspace = true }
+probekit-probes = { workspace = true }
+probekit-steering = { workspace = true }
+probekit-registry = { workspace = true }
+probekit-monitor = { workspace = true }
+probekit-api = { workspace = true }
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+exclude = ["demo", ".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+# N803/N806: X, W, C are standard names in ML/numerical code.
+ignore = ["N803", "N806"]
+
+[tool.mypy]
+python_version = "3.12"
+check_untyped_defs = true
+namespace_packages = true
+explicit_package_bases = true
+mypy_path = "packages/core/src:packages/harvest/src:packages/sae/src:packages/circuit/src:packages/auto-interp/src:packages/probes/src:packages/steering/src:packages/registry/src:packages/monitor/src:packages/api/src"
+
+[[tool.mypy.overrides]]
+module = [
+    "sklearn.*", "transformers.*", "pyarrow.*", "onnx.*",
+    "onnxruntime.*", "prometheus_client.*", "uvicorn.*",
+    "tokenizers.*", "yaml",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["packages/core/src", "packages/harvest/src", "packages/sae/src", "packages/circuit/src", "packages/auto-interp/src", "packages/probes/src", "packages/steering/src", "packages/registry/src", "packages/monitor/src", "packages/api/src"]

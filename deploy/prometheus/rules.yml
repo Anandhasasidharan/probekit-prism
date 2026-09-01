@@ -1,0 +1,18 @@
+groups:
+  - name: probekit
+    rules:
+      - alert: ProbeKitAPIDown
+        expr: up{job="probekit-api"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "ProbeKit API is down"
+
+      - alert: ProbeKitHighLatency
+        expr: histogram_quantile(0.95, rate(probekit_request_latency_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "p95 API latency above 1s"

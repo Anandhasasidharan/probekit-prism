@@ -1,0 +1,11 @@
+[project]
+name = "probekit-monitor"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "probekit-core",
+    "probekit-registry",
+    "numpy>=1.26",
+    "httpx>=0.28",
+    "prometheus-client>=0.21",
+]

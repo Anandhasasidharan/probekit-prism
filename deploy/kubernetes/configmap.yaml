@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: probekit-config
+data:
+  config.yaml: |
+    harvest:
+      model_name: "gpt2"
+      capture_layers: [0, 5, 10, "last"]
+      batch_size: 32
+    sae:
+      architecture: "topk"
+      k: 32
+      dict_size: 16384
+      layer: 5
+    circuit:
+      device: "cpu"
+      max_feature_nodes: 7500
+    probes:
+      concepts: ["tool_misuse", "overeager_execution", "pii_detection"]
+    api:
+      host: "0.0.0.0"
+      port: 8000
+      rate_limit_per_minute: 60

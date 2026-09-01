@@ -1,0 +1,59 @@
+version: "3.9"
+
+services:
+  probekit-api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - PROBEKIT_CONFIG=/app/config.yaml
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+    volumes:
+      - ../data:/app/data
+      - ../config.yaml:/app/config.yaml
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  probekit-harvester:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.harvester
+    environment:
+      - PROBEKIT_CONFIG=/app/config.yaml
+    volumes:
+      - ../data:/app/data
+      - ../config.yaml:/app/config.yaml
+    profiles: ["harvester"]  # only starts with --profile harvester
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: probekit
+      POSTGRES_PASSWORD: probekit
+      POSTGRES_DB: probekit
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U probekit"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus:/etc/prometheus
+    ports:
+      - "9090:9090"
+
+volumes:
+  pgdata:

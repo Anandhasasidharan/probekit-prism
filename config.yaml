@@ -1,0 +1,72 @@
+# ProbeKit v2 — Global Configuration
+
+harvest:
+  model_name: "gpt2"
+  capture_layers: [0, 5, 10, "last"]
+  batch_size: 32
+  output_format: "parquet"
+  compression: "zstd"
+
+sae:
+  architecture: "topk"
+  k: 32
+  dict_size: 16384
+  expansion_factor: 16
+  lr: 3.0e-4
+  sparsity_coef: 0.1
+  model: "gpt2"
+  layer: 5
+
+circuit:
+  model_name: "gemma-2-2b"
+  clt_size: "426k"
+  device: "cpu"
+  max_feature_nodes: 7500
+  node_threshold: 0.8
+  edge_threshold: 0.95
+
+auto_interp:
+  provider: "openai"
+  model: "gpt-4o-mini"
+  top_k_examples: 50
+  cache_db: "./data/features/explanation_cache.sqlite"
+
+probes:
+  concepts:
+    - "tool_misuse"
+    - "overeager_execution"
+    - "pii_detection"
+  test_split: 0.2
+  ood_split: 0.3
+
+steering:
+  default_strategy: "suppress_risky"
+  strategies:
+    suppress_risky:
+      intervention: "suppress"
+      threshold: 0.7
+      strength: 1.0
+    increase_honesty:
+      intervention: "increase"
+      threshold: 0.3
+      strength: 0.8
+    reduce_deception:
+      intervention: "suppress"
+      threshold: 0.6
+      strength: 1.5
+
+registry:
+  database_url: "sqlite:///./data/features/registry.db"
+  # database_url: "postgresql://probekit:probekit@localhost:5432/probekit"
+
+monitor:
+  drift_threshold_std: 3.0
+  alert_channels:
+    slack_webhook: ""
+  check_interval_seconds: 3600
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+  log_level: "info"
+  rate_limit_per_minute: 60

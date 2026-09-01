@@ -1,0 +1,11 @@
+[project]
+name = "probekit-harvest"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "probekit-core",
+    "torch>=2.4",
+    "transformers>=4.45",
+    "pyarrow>=18",
+    "duckdb>=1.1",
+]

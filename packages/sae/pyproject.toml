@@ -1,0 +1,11 @@
+[project]
+name = "probekit-sae"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "probekit-core",
+    "probekit-harvest",
+    "torch>=2.4",
+    "numpy>=1.26",
+    "onnxruntime>=1.19",
+]

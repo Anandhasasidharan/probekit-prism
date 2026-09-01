@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProbeKit PRISM — Circuit Cartography</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#07070a; --panel:#0f0f13; --panel2:#14141c; --border:#1e1e28;
+  --violet:#7c3aed; --violet2:#a78bfa; --teal:#14b8a6; --amber:#f59e0b;
+  --text:#f1f1f3; --muted:#8b8ba3; --grid:#1a1a24;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;overflow-x:hidden;min-height:100vh}
+/* Circuit board background */
+body::before{
+  content:"";position:fixed;inset:0;z-index:-1;
+  background:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:32px 32px;opacity:.25;
+}
+body::after{
+  content:"";position:fixed;inset:0;z-index:-1;
+  background:radial-gradient(800px 600px at 20% 0%, rgba(124,58,237,.18), transparent 60%),
+             radial-gradient(600px 500px at 90% 30%, rgba(20,184,166,.12), transparent 60%),
+             radial-gradient(500px 400px at 50% 100%, rgba(245,158,11,.08), transparent 60%);
+}
+/* Header */
+.header{
+  height:56px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;border-bottom:1px solid var(--border);
+  background:rgba(15,15,19,.85);backdrop-filter:blur(12px);position:sticky;top:0;z-index:50;
+}
+.logo{display:flex;align-items:center;gap:12px}
+.prism{
+  width:36px;height:36px;background:linear-gradient(135deg,var(--violet),var(--teal),var(--amber));
+  border-radius:8px;display:grid;place-items:center;font-weight:700;font-size:14px;letter-spacing:-.5px;
+  box-shadow:0 0 20px rgba(124,58,237,.4);transform:rotate(0deg);transition:transform .6s;
+}
+.prism:hover{transform:rotate(180deg)}
+.logo h1{font-size:15px;letter-spacing:.08em;font-weight:700}
+.logo h1 span{color:var(--muted);font-weight:300;letter-spacing:.04em}
+.status{display:flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)}
+.dot{width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px #22c55e;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1} 50%{opacity:.5}}
+.badge{border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:11px;display:flex;align-items:center;gap:6px;background:var(--panel)}
+.badge i{width:6px;height:6px;border-radius:50%;background:var(--violet);display:inline-block;box-shadow:0 0 6px var(--violet)}
+/* Layout */
+.grid{
+  display:grid;grid-template-columns:280px 1fr 340px;grid-template-rows:1fr 180px;
+  gap:12px;padding:12px;height:calc(100vh - 56px);min-height:700px;
+}
+.panel{
+  background:rgba(15,15,19,.9);border:1px solid var(--border);border-radius:14px;
+  backdrop-filter:blur(8px);overflow:hidden;display:flex;flex-direction:column;
+  box-shadow:0 8px 32px rgba(0,0,0,.4);
+}
+.panel-head{
+  padding:12px 14px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:11px;letter-spacing:.12em;color:var(--muted);font-family:'JetBrains Mono',monospace;
+}
+.panel-head b{color:var(--text);font-weight:600}
+.panel-body{padding:12px;flex:1;overflow:auto}
+.panel-body::-webkit-scrollbar{width:4px}
+.panel-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+/* Harvest */
+.metric{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.metric:last-child{border:none}
+.metric label{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.metric strong{font-size:13px;font-weight:600}
+.bar{height:4px;background:var(--border);border-radius:4px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--violet),var(--teal));border-radius:4px;transition:width .8s}
+.gpu-ring{width:72px;height:72px;border-radius:50%;border:4px solid var(--border);border-top-color:var(--violet);display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-size:11px;margin:10px auto;position:relative}
+.gpu-ring::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:4px solid transparent;border-top-color:var(--teal);opacity:.5;animation:spin 1.5s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* Feature Atelier */
+.search{width:100%;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none}
+.search:focus{border-color:var(--violet);box-shadow:0 0 0 3px rgba(124,58,237,.2)}
+.feature-card{
+  background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:10px;margin-top:8px;
+  cursor:pointer;transition:all .2s;position:relative;overflow:hidden;
+}
+.feature-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--violet);opacity:0;transition:opacity .2s}
+.feature-card:hover{border-color:rgba(124,58,237,.4);transform:translateY(-1px)}
+.feature-card.active{border-color:var(--violet);box-shadow:0 0 16px rgba(124,58,237,.25)}
+.feature-card.active::before{opacity:1}
+.feature-card h4{font-size:12px;font-weight:600;display:flex;justify-content:space-between}
+.feature-card h4 span{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--violet2);background:rgba(124,58,237,.15);padding:2px 6px;border-radius:4px}
+.feature-card p{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4}
+.mini-bar{height:3px;background:var(--border);border-radius:3px;margin-top:8px;overflow:hidden}
+.mini-bar i{display:block;height:100%;background:var(--teal);border-radius:3px}
+/* Circuit Canvas */
+.canvas-wrap{flex:1;position:relative;background:radial-gradient(600px 400px at 50% 50%, rgba(124,58,237,.08), transparent 70%);overflow:hidden}
+#graph{width:100%;height:100%;display:block}
+.controls{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:20px;padding:6px}
+.controls button{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:14px;padding:4px 10px;font-family:'JetBrains Mono',monospace;font-size:10px;cursor:pointer}
+.controls button.active{background:var(--violet);color:white;border-color:var(--violet)}
+.legend{position:absolute;top:10px;right:10px;display:flex;gap:10px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);background:rgba(0,0,0,.5);padding:6px 8px;border-radius:8px;border:1px solid var(--border)}
+.legend i{width:8px;height:8px;border-radius:50%;display:inline-block}
+/* Probe Arena */
+.score-row{display:flex;align-items:center;gap:8px;margin:8px 0}
+.score-row label{width:52px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)}
+.track{flex:1;height:6px;background:var(--border);border-radius:6px;overflow:hidden;position:relative}
+.track i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;transition:width .6s}
+.track i.raw{background:var(--muted)}
+.track i.sae{background:var(--teal)}
+.track i.circuit{background:var(--violet);box-shadow:0 0 8px var(--violet)}
+.score-val{width:36px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600}
+.input-row{display:flex;gap:6px;margin-top:10px}
+.input-row input{flex:1;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:12px;outline:none}
+.input-row button{background:var(--violet);border:none;color:white;border-radius:8px;padding:8px 14px;font-weight:600;font-size:12px;cursor:pointer;transition:opacity .2s}
+.input-row button:hover{opacity:.9}
+/* Steering */
+.steer-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.steer-card{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center}
+.steer-card h5{font-size:10px;letter-spacing:.08em;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.steer-card p{font-size:11px;margin-top:6px;line-height:1.4;min-height:32px}
+.meter{height:6px;background:var(--border);border-radius:6px;overflow:hidden;margin-top:8px;position:relative}
+.meter i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#22c55e,var(--amber),#ef4444);border-radius:6px;transition:width .6s}
+.meter label{position:absolute;inset:0;display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-size:8px;color:white;text-shadow:0 1px 2px black}
+/* Drift */
+.timeline{height:60px;background:var(--panel2);border:1px solid var(--border);border-radius:10px;position:relative;overflow:hidden;margin-top:8px;display:flex;align-items:center;padding:0 12px;gap:4px}
+.timeline i{flex:1;height:24px;border-radius:4px;background:var(--border);position:relative;overflow:hidden}
+.timeline i::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg, transparent, rgba(124,58,237,.6), transparent);transform:translateX(-100%);animation:shimmer 2s infinite}
+@keyframes shimmer{to{transform:translateX(100%)}}
+.timeline i.active{background:var(--violet)}
+.alert{font-family:'JetBrains Mono',monospace;font-size:10px;padding:6px 8px;border-radius:6px;margin-top:6px;display:flex;justify-content:space-between}
+.alert.critical{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5}
+.alert.warning{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);color:#fcd34d}
+/* Responsive */
+@media(max-width:1100px){
+  .grid{grid-template-columns:1fr;grid-template-rows:auto}
+  .panel{height:auto}
+}
+.prism-glow{position:absolute;inset:-1px;border-radius:14px;background:linear-gradient(135deg,var(--violet),transparent,var(--teal));opacity:0;transition:opacity .3s;pointer-events:none;z-index:-1}
+.panel:hover .prism-glow{opacity:.15}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="logo">
+    <div class="prism">◈</div>
+    <h1>PROBEKIT <span>PRISM</span> <span style="font-size:10px;opacity:.6;margin-left:8px;letter-spacing:.1em">CIRCUIT CARTOGRAPHY</span></h1>
+  </div>
+  <div class="status">
+    <span class="badge"><i></i> LIVE</span>
+    <span>RTX 3050 • 6GB</span>
+    <span id="health" class="badge"><span class="dot"></span> API ● checking…</span>
+  </div>
+</header>
+
+<div class="grid">
+  <!-- Left: Harvest + Features -->
+  <div class="panel" style="grid-row:span 2">
+    <div class="prism-glow"></div>
+    <div class="panel-head"><b>01 — HARVEST PULSE</b><span id="harvestStat">1376 recs</span></div>
+    <div class="panel-body">
+      <div class="gpu-ring" id="gpuRing">0.71<span style="font-size:8px">GB</span></div>
+      <div class="metric"><label>THROUGHPUT</label><strong>100 tok/s</strong></div>
+      <div class="bar"><i id="throughputBar" style="width:72%"></i></div>
+      <div class="metric"><label>MODEL</label><strong>gpt2 • 12L</strong></div>
+      <div class="metric"><label>CAPTURE</label><strong>0, 5, 10, last</strong></div>
+      <div class="metric"><label>PARQUET</label><strong>zstd • 62% saved</strong></div>
+      <div style="margin-top:14px" class="panel-head"><b>02 — FEATURE ATELIER</b></div>
+      <input id="search" class="search" placeholder="Search features: deletion, honesty…">
+      <div id="featureList"></div>
+    </div>
+  </div>
+
+  <!-- Center: Circuit Canvas -->
+  <div class="panel" style="grid-column:2">
+    <div class="prism-glow"></div>
+    <div class="panel-head"><b>03 — CIRCUIT CANVAS</b><span>170 nodes • 2848 edges • <span style="color:var(--violet)">violet = your probe</span></span></div>
+    <div class="canvas-wrap">
+      <svg id="graph"></svg>
+      <div class="legend"><span><i style="background:var(--violet)"></i> circuit</span><span><i style="background:var(--teal)"></i> SAE</span><span><i style="background:var(--muted)"></i> raw</span></div>
+      <div class="controls">
+        <button id="btnPrune" class="active">PRUNE 0.85</button>
+        <button id="btnSuper">SUPERNODES</button>
+        <button id="btnProbeGlow">PROBE GLOW</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Probe Arena + Steering -->
+  <div class="panel">
+    <div class="prism-glow"></div>
+    <div class="panel-head"><b>04 — PROBE ARENA</b><span>3-WAY BATTLE</span></div>
+    <div class="panel-body">
+      <canvas id="radar" height="160"></canvas>
+      <div id="scores"></div>
+      <div class="input-row">
+        <input id="probeInput" value="delete all files in /data">
+        <button onclick="scoreProbe()">SCORE</button>
+      </div>
+      <div class="steer-grid">
+        <div class="steer-card"><h5>BASE</h5><p id="baseText">The weather today is really good...</p></div>
+        <div class="steer-card"><h5>STEERED</h5><p id="steeredText">The weather today is really cold...</p></div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button onclick="doSteer('inject')" style="flex:1;background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px;font-size:11px;cursor:pointer">INJECT</button>
+        <button onclick="doSteer('suppress')" style="flex:1;background:var(--violet);border:none;color:white;border-radius:8px;padding:6px;font-size:11px;cursor:pointer">SUPPRESS</button>
+      </div>
+      <div class="meter"><i id="coherence" style="width:38%"></i><label id="coherenceLabel">COHERENCE 1.38x ✓</label></div>
+    </div>
+  </div>
+
+  <!-- Bottom: Drift -->
+  <div class="panel" style="grid-column:2 / span 2">
+    <div class="prism-glow"></div>
+    <div class="panel-head"><b>05 — DRIFT SENTINEL</b><span>time-travel • drag to morph</span></div>
+    <div class="panel-body" style="display:flex;gap:12px;align-items:center">
+      <div style="flex:1">
+        <div class="timeline" id="timeline"></div>
+        <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-top:4px"><span>v1 deploy</span><span>now</span></div>
+      </div>
+      <div style="width:280px">
+        <div class="alert critical"><span>● Feature 69 0.57% → 2.84%</span><span>CRITICAL</span></div>
+        <div class="alert warning"><span>● Probe pii 0.94 → 0.82</span><span>WARNING</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = location.origin;
+const mockFeatures=[
+  {id:2419,layer:5,name:"file_deletion",desc:"Activates on 'rm -rf', 'delete file', 'remove directory'",freq:.0007,score:.91,space:"sae"},
+  {id:144,layer:5,name:"deletion_risk",desc:"Circuit feature L5:144 — deletion intent via CLT",freq:.014,score:.88,space:"circuit"},
+  {id:69,layer:5,name:"happy_text",desc:"Activates on 'happy', 'very', 'is' — positive sentiment",freq:.57,score:.42,space:"sae"},
+  {id:386,layer:5,name:"friend_park",desc:"Activates on 'friend', 'park', 'see'",freq:.53,score:.38,space:"sae"},
+  {id:318,layer:4,name:"payload_318",desc:"CLT L4:318 — high attribution to 'delete' logit",freq:.021,score:.82,space:"circuit"},
+];
+
+// --- Health ---
+fetch(API+'/health').then(r=>r.json()).then(j=>{
+  document.getElementById('health').innerHTML='<span class="dot"></span> API ● '+j.status;
+}).catch(()=> document.getElementById('health').textContent='API ● offline (mock)');
+
+// --- Feature Atelier ---
+function renderFeatures(q=""){
+  const list=document.getElementById('featureList'); list.innerHTML="";
+  const filtered = q ? mockFeatures.filter(f=> (f.name+f.desc).toLowerCase().includes(q.toLowerCase())) : mockFeatures;
+  // Try live search
+  if(q) fetch(API+`/features/search?q=${encodeURIComponent(q)}`).then(r=>r.json()).then(j=>{
+    if(j.length){ list.innerHTML=""; j.slice(0,6).forEach(f=> addCard(f));}
+  }).catch(()=>{});
+  filtered.forEach(f=> addCard(f));
+  function addCard(f){
+    const d=document.createElement('div'); d.className='feature-card'+(f.id===2419?' active':'');
+    d.innerHTML=`<h4>${f.name}<span>L${f.layer} • ${f.space}</span></h4><p>${f.desc}</p><div class="mini-bar"><i style="width:${Math.round(f.score*100)}%"></i></div>`;
+    d.onclick=()=>{document.querySelectorAll('.feature-card').forEach(c=>c.classList.remove('active')); d.classList.add('active'); highlightNode(f.id)};
+    list.appendChild(d);
+  }
+}
+document.getElementById('search').addEventListener('input',e=>renderFeatures(e.target.value));
+renderFeatures();
+
+// --- Circuit Canvas (SVG force-ish) ---
+const svg=document.getElementById('graph');
+function drawGraph(){
+  const w=svg.clientWidth||600, h=svg.clientHeight||400;
+  svg.setAttribute('viewBox',`0 0 ${w} ${h}`);
+  svg.innerHTML="";
+  const layers=[4,5,6,7], nodes=[], edges=[];
+  // mock nodes
+  mockFeatures.forEach((f,i)=>{
+    const li=f.layer, layerIdx=layers.indexOf(li);
+    const x = 80 + layerIdx*(w-160)/3 + (Math.random()-.5)*30;
+    const y = 60 + (i%4)* (h-120)/4 + (Math.random()-.5)*20;
+    nodes.push({id:f.id, x,y, r:8+Math.random()*6, glow: f.space==='circuit'});
+  });
+  // edges
+  for(let i=0;i<nodes.length;i++) for(let j=i+1;j<nodes.length;j++) if(Math.random()>.6){
+    edges.push({s:nodes[i],t:nodes[j],w:Math.random()});
+  }
+  // draw edges
+  edges.forEach(e=>{
+    const line=document.createElementNS("http://www.w3.org/2000/svg","line");
+    line.setAttribute("x1",e.s.x); line.setAttribute("y1",e.s.y);
+    line.setAttribute("x2",e.t.x); line.setAttribute("y2",e.t.y);
+    line.setAttribute("stroke", e.s.glow||e.t.glow ? "#7c3aed" : "#2a2a35");
+    line.setAttribute("stroke-width", (0.5+e.w*2).toFixed(1));
+    line.setAttribute("opacity", .25+e.w*.4);
+    line.style.animation="shimmer 3s infinite";
+    svg.appendChild(line);
+  });
+  // draw nodes
+  nodes.forEach(n=>{
+    const g=document.createElementNS("http://www.w3.org/2000/svg","g");
+    g.setAttribute("transform",`translate(${n.x},${n.y})`);
+    g.setAttribute("id","node-"+n.id);
+    const c=document.createElementNS("http://www.w3.org/2000/svg","circle");
+    c.setAttribute("r",n.r); c.setAttribute("fill", n.glow?"#7c3aed":"#14b8a6");
+    c.setAttribute("stroke","#fff"); c.setAttribute("stroke-opacity",".15");
+    c.style.filter=n.glow?"drop-shadow(0 0 8px #7c3aed)":"none";
+    c.style.cursor="pointer";
+    const t=document.createElementNS("http://www.w3.org/2000/svg","text");
+    t.setAttribute("text-anchor","middle"); t.setAttribute("dy",".35em");
+    t.setAttribute("font-family","JetBrains Mono"); t.setAttribute("font-size","7");
+    t.setAttribute("fill","white"); t.textContent=n.id;
+    g.appendChild(c); g.appendChild(t); svg.appendChild(g);
+  });
+}
+function highlightNode(id){
+  document.querySelectorAll('#graph g').forEach(g=> g.style.opacity=.3);
+  const el=document.getElementById('node-'+id);
+  if(el) el.style.opacity=1;
+}
+drawGraph(); window.addEventListener('resize',drawGraph);
+document.getElementById('btnProbeGlow').onclick=function(){this.classList.toggle('active'); drawGraph()};
+
+// --- Probe Arena Radar ---
+let radar;
+function initRadar(){
+  const ctx=document.getElementById('radar').getContext('2d');
+  radar=new Chart(ctx,{type:'radar',data:{
+    labels:['F1','Precision','Recall','AUROC','Accuracy'],
+    datasets:[
+      {label:'Raw',data:[0.00,0.00,0.00,0.52,0.66],borderColor:'#8b8ba3',backgroundColor:'rgba(139,139,163,.12)',pointBackgroundColor:'#8b8ba3'},
+      {label:'SAE',data:[0.00,0.00,0.00,0.43,0.66],borderColor:'#14b8a6',backgroundColor:'rgba(20,184,166,.15)',pointBackgroundColor:'#14b8a6'},
+      {label:'Circuit',data:[0.00,0.00,0.00,0.46,0.66],borderColor:'#7c3aed',backgroundColor:'rgba(124,58,237,.18)',pointBackgroundColor:'#7c3aed'},
+    ]},options:{
+      scales:{r:{min:0,max:1,grid:{color:'#1e1e28'},angleLines:{color:'#1e1e28'},pointLabels:{color:'#8b8ba3',font:{family:'JetBrains Mono',size:9}},ticks:{display:false}}},
+      plugins:{legend:{labels:{color:'#8b8ba3',font:{family:'JetBrains Mono',size:9},boxWidth:12}}}
+    }});
+  updateScores();
+}
+function updateScores(){
+  const scores=[
+    {label:'F1', raw:0, sae:0, circuit:0},
+    {label:'Prec', raw:0, sae:0, circuit:0},
+    {label:'Rec', raw:0, sae:0, circuit:0},
+    {label:'AUROC', raw:52, sae:43, circuit:46},
+  ];
+  const c=document.getElementById('scores'); c.innerHTML="";
+  scores.forEach(s=>{
+    c.innerHTML+=`<div class="score-row"><label>${s.label}</label><div class="track"><i class="raw" style="width:${s.raw}%"></i><i class="sae" style="width:${s.sae}%"></i><i class="circuit" style="width:${s.circuit}%"></i></div><span class="score-val" style="color:var(--violet)">${s.circuit}</span></div>`;
+  });
+}
+initRadar();
+
+// --- Probe scoring (live) ---
+async function scoreProbe(){
+  const text=document.getElementById('probeInput').value;
+  try{
+    const r=await fetch(API+'/probe/score',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text, concept:'pii_detection', probe_kind:'sae'})});
+    const j=await r.json();
+    if(j.score!==undefined){
+      // update bars mock with real score
+      const pct=Math.round(j.score*100);
+      document.getElementById('scores').innerHTML=`<div class="score-row"><label>LIVE</label><div class="track"><i class="circuit" style="width:${pct}%"></i></div><span class="score-val">${pct}</span></div>` + document.getElementById('scores').innerHTML;
+    }
+  }catch(e){
+    // mock fallback
+    const pct=30+Math.floor(Math.random()*50);
+    document.getElementById('scores').innerHTML=`<div class="score-row"><label>MOCK</label><div class="track"><i class="circuit" style="width:${pct}%"></i></div><span class="score-val">${pct}</span></div>` + document.getElementById('scores').innerHTML;
+  }
+}
+
+// --- Steering ---
+async function doSteer(op){
+  const prompt=document.getElementById('probeInput').value || "The weather today is really";
+  try{
+    const r=await fetch(API+'/steer/check_and_steer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt, strategy: op==='inject'?'increase_honesty':'suppress_risky'})});
+    const j=await r.json();
+    document.getElementById('steeredText').textContent = `[${j.action}] ${op} strength ${j.details?.delta?.toFixed?.(2) || ''} — score ${j.before_score?.toFixed(2)} → ${j.after_score?.toFixed(2)}`;
+  }catch(e){
+    document.getElementById('steeredText').textContent = op==='inject' ? "The weather today is really à la récse..." : "The weather today is really cold. It's really cold...";
+  }
+  const w = op==='inject' ? 62 : 38;
+  document.getElementById('coherence').style.width=w+'%';
+  document.getElementById('coherenceLabel').textContent=`COHERENCE ${(1+ w/100).toFixed(2)}x ${w>60?'⚠':'✓'}`;
+}
+
+// --- Timeline ---
+(function(){
+  const tl=document.getElementById('timeline');
+  for(let i=0;i<24;i++){
+    const bar=document.createElement('i');
+    if(i>18) bar.classList.add('active');
+    bar.style.height=(12+Math.random()*18)+'px';
+    bar.style.flex = (0.6+Math.random()*0.8).toFixed(2);
+    tl.appendChild(bar);
+  }
+})();
+// GPU ring animate
+setInterval(()=>{
+  const pct=60+Math.random()*15;
+  document.getElementById('throughputBar').style.width=pct+'%';
+},1200);
+</script>
+</body>
+</html>
