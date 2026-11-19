@@ -6,29 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install uv
-        uses: astral-sh/setup-uv@v3
-      - name: Sync dependencies
-        run: uv sync --frozen --all-packages --all-groups
-      - name: Lint
-        run: uv run ruff check .
-      - name: Type check
-        run: uv run mypy packages/
-      - name: Test
-        run: uv run pytest tests/ -v --timeout=60
-
-  docker:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build API image
-        run: docker build -f deploy/Dockerfile -t probekit-api:ci .
-      - name: Build harvester image
-        run: docker build -f deploy/Dockerfile.harvester -t probekit-harvester:ci .
-      - name: Smoke test
-        run: |
-          docker compose -f deploy/docker-compose.yml up -d
-          sleep 5
-          curl -f http://localhost:8000/health
-          docker compose -f deploy/docker-compose.yml down
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked
+      - run: uv run --no-sync ruff check .
+      - run: uv run --no-sync pytest -m "not slow"

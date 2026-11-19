@@ -31,3 +31,10 @@ Thumbs.db
 *.swo
 
 # uv
+data/*
+!data/examples/
+data/examples/*
+!data/examples/*.jsonl
+runs/*
+!runs/*.json
+!runs/*.md

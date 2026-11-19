@@ -1,74 +1,49 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
 [project]
 name = "probekit"
-version = "0.1.0"
-requires-python = ">=3.12"
+version = "0.2.0"
+description = "GPT-2 activation harvesting, sparse autoencoders, and probe evaluation"
+requires-python = ">=3.11,<3.12"
 dependencies = [
-    "torch>=2.13.0",
+    "anthropic>=0.49",
+    "datasets>=3.3,<5",
+    "duckdb>=1.2",
+    "fastapi>=0.115",
+    "matplotlib>=3.9",
+    "numpy>=1.26",
+    "onnx>=1.17",
+    "onnxruntime>=1.20",
+    "pyarrow>=18",
+    "pydantic>=2.10",
+    "pyyaml>=6.0",
+    "scikit-learn>=1.6",
+    "torch>=2.6,<3",
+    "transformers>=4.51,<5",
+    "typer>=0.15",
+    "uvicorn>=0.34",
 ]
+
+[project.scripts]
+probekit = "probekit.cli:app"
 
 [dependency-groups]
-dev = [
-    "pytest>=8.3",
-    "pytest-asyncio>=0.24",
-    "pytest-timeout>=2.3",
-    "ruff>=0.7",
-    "mypy>=1.13",
-    "pre-commit>=4.0",
-    "httpx>=0.28",
-]
+dev = ["httpx>=0.28", "pytest>=8.3", "ruff>=0.11"]
 
-[tool.uv.workspace]
-members = [
-    "packages/core",
-    "packages/harvest",
-    "packages/sae",
-    "packages/circuit",
-    "packages/auto-interp",
-    "packages/probes",
-    "packages/steering",
-    "packages/registry",
-    "packages/monitor",
-    "packages/api",
-]
-
-[tool.uv.sources]
-probekit-core = { workspace = true }
-probekit-harvest = { workspace = true }
-probekit-sae = { workspace = true }
-probekit-circuit = { workspace = true }
-probekit-auto-interp = { workspace = true }
-probekit-probes = { workspace = true }
-probekit-steering = { workspace = true }
-probekit-registry = { workspace = true }
-probekit-monitor = { workspace = true }
-probekit-api = { workspace = true }
+[tool.hatch.build.targets.wheel]
+packages = ["src/probekit"]
 
 [tool.ruff]
+target-version = "py311"
 line-length = 100
-target-version = "py312"
-exclude = ["demo", ".venv"]
+include = ["src/**/*.py", "tests/**/*.py", "scripts/**/*.py", "pyproject.toml"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "N", "W", "UP"]
-# N803/N806: X, W, C are standard names in ML/numerical code.
-ignore = ["N803", "N806"]
-
-[tool.mypy]
-python_version = "3.12"
-check_untyped_defs = true
-namespace_packages = true
-explicit_package_bases = true
-mypy_path = "packages/core/src:packages/harvest/src:packages/sae/src:packages/circuit/src:packages/auto-interp/src:packages/probes/src:packages/steering/src:packages/registry/src:packages/monitor/src:packages/api/src"
-
-[[tool.mypy.overrides]]
-module = [
-    "sklearn.*", "transformers.*", "pyarrow.*", "onnx.*",
-    "onnxruntime.*", "prometheus_client.*", "uvicorn.*",
-    "tokenizers.*", "yaml",
-]
-ignore_missing_imports = true
+select = ["E", "F", "I", "W", "UP"]
 
 [tool.pytest.ini_options]
-asyncio_mode = "auto"
 testpaths = ["tests"]
-pythonpath = ["packages/core/src", "packages/harvest/src", "packages/sae/src", "packages/circuit/src", "packages/auto-interp/src", "packages/probes/src", "packages/steering/src", "packages/registry/src", "packages/monitor/src", "packages/api/src"]
+addopts = "--strict-markers"
+markers = ["slow: full pipeline or external model artifacts"]

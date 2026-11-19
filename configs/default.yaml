@@ -1,0 +1,22 @@
+seed: 42
+model:
+  name: gpt2
+  revision: 607a30d783dfa663caf39e06633721c8d4cfcd7e
+  layer: 8
+  device: auto
+  batch_size: 8
+  max_length: 128
+  cpu_threads: 4
+corpus:
+  dataset: Salesforce/wikitext
+  subset: wikitext-103-raw-v1
+  split: train
+  text_field: text
+  max_tokens: 2000000
+paths:
+  activations: ../data/activations/corpus.parquet
+  sequences: ../data/activations/sequences.parquet
+  sae_checkpoint: ../data/saes/topk.pt
+  feature_db: ../data/features.sqlite
+  probe_dir: ../data/probes
+  runs: ../runs
