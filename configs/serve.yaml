@@ -1,0 +1,9 @@
+host: 127.0.0.1
+port: 8000
+probe_space: raw
+feature_limit: 10
+max_text_chars: 20000
+onnx_threads: 1
+profile_warmups: 3
+profile_repeats: 20
+offline_labels: false

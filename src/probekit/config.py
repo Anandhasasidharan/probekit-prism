@@ -65,6 +65,7 @@ ConfigType = TypeVar("ConfigType", bound=Settings)
 DEFAULT_CONFIG = Path("configs/default.yaml")
 DEFAULT_AUTOINTERP_CONFIG = Path("configs/autointerp.yaml")
 DEFAULT_PROBES_CONFIG = Path("configs/probes.yaml")
+DEFAULT_SERVE_CONFIG = Path("configs/serve.yaml")
 DEFAULT_SAE_CONFIG = Path("configs/sae_topk.yaml")
 
 

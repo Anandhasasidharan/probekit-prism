@@ -1,0 +1,41 @@
+{
+  "device": "cpu",
+  "input_tokens_min": 26,
+  "input_tokens_max": 37,
+  "onnx_threads": 1,
+  "onnx_provider": "CPUExecutionProvider",
+  "repeats_per_space": 20,
+  "warmups_per_space": 3,
+  "gpt2_cpu_threads": 4,
+  "model_version": "gpt2@607a30d783dfa663caf39e06633721c8d4cfcd7e",
+  "latency": {
+    "raw": {
+      "gpt2_forward_ms": {
+        "p50": 61.55844299973978,
+        "p95": 71.40296570046304
+      },
+      "onnx_probe_only_ms": {
+        "p50": 0.09780150003280141,
+        "p95": 0.11812384987024417
+      },
+      "application_ms": {
+        "p50": 62.266369499866414,
+        "p95": 72.06967195070321
+      }
+    },
+    "sae": {
+      "gpt2_forward_ms": {
+        "p50": 60.91039600005388,
+        "p95": 67.55928439956733
+      },
+      "onnx_probe_only_ms": {
+        "p50": 0.058731499848363455,
+        "p95": 0.08137444960993889
+      },
+      "application_ms": {
+        "p50": 63.2930144997772,
+        "p95": 69.28302029987208
+      }
+    }
+  }
+}

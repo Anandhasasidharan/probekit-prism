@@ -35,3 +35,10 @@
 - The OOD split uses different surrounding templates and changes parts of the value format. Sequence IDs and normalized text are disjoint, and both probe spaces use the same token sequences, pooling, stratified subsets and validation C grid.
 - Standardization is fitted on each training subset and folded into the learned logistic coefficients. Validation AUROC selects C and ties favor the smallest C. Test and OOD scores use a fixed probability threshold. Sample-efficiency dispersion is the population standard deviation over the configured seeds.
 - Counts describe nonzero learned coefficients. Sparse token activations can still produce dense pooled features and probe weights.
+
+## Phase 5
+
+- The portable SAE graph exports input normalization, decoder-bias centering, and the encoder affine transform. NumPy applies TopK so its selection policy stays explicit and ONNX consumers only require standard affine operators. Boundary ties can select different equivalent indices across runtimes.
+- Each probe graph implements the folded logistic regression with a sigmoid. Export verifies probabilities on the saved test split and the SAE encoder on held-out residuals.
+- Serving defaults to the raw probe based on the measured OOD results. Set the serving space to `sae` to exercise the full SAE-probe inference path. Feature activation always uses the SAE.
+- Application latency includes tokenization, model compute, pooling and the configured inference path. The benchmark measures GPT-2 forward time and probe-only ONNX time separately. HTTP transport and model startup are outside those timings.

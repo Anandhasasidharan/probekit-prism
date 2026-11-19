@@ -8,6 +8,7 @@ from itertools import islice
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from threading import Lock
+from time import perf_counter
 from typing import TypeVar
 
 import numpy as np
@@ -114,10 +115,19 @@ class ActivationHarvester:
         )
         return {key: value.to(self.device) for key, value in batch.items()}
 
-    @torch.inference_mode()
     def capture(self, sequences: Sequence[TokenizedSequence]) -> list[Tensor]:
-        """Return one CPU float32 matrix per sequence, excluding its first position."""
+        """Return one CPU float32 matrix per sequence, excluding the first position."""
+        return self.capture_with_timing(sequences)[0]
+
+    @torch.inference_mode()
+    def capture_with_timing(
+        self,
+        sequences: Sequence[TokenizedSequence],
+        *,
+        measure: bool = False,
+    ) -> tuple[list[Tensor], float]:
         hidden: Tensor | None = None
+        forward_ms = 0.0
 
         def hook(_module: nn.Module, _inputs: tuple, output: Tensor | tuple) -> None:
             nonlocal hidden
@@ -127,13 +137,21 @@ class ActivationHarvester:
         with self.lock:
             handle = self.block.register_forward_hook(hook)
             try:
+                if measure and self.device.type == "cuda":
+                    torch.cuda.synchronize(self.device)
+                start = perf_counter()
                 self.model.transformer(**inputs, use_cache=False)
+                if measure:
+                    if self.device.type == "cuda":
+                        torch.cuda.synchronize(self.device)
+                    forward_ms = (perf_counter() - start) * 1000
             finally:
                 handle.remove()
         if hidden is None:
             raise RuntimeError("GPT-2 hook did not capture a residual stream")
         hidden = hidden.to(device="cpu", dtype=torch.float32)
-        return [hidden[i, 1 : len(seq.token_ids)] for i, seq in enumerate(sequences)]
+        matrices = [hidden[i, 1 : len(seq.token_ids)] for i, seq in enumerate(sequences)]
+        return matrices, forward_ms
 
     def _token_batches(
         self, sequences: Iterable[SequenceInput], max_tokens: int | None

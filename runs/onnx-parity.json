@@ -1,0 +1,25 @@
+{
+  "absolute_tolerance": 0.0001,
+  "max_absolute_errors": {
+    "sae_encoder_with_numpy_topk": 2.86102294921875e-06,
+    "raw_probe": 7.92725116383064e-07,
+    "sae_probe": 1.6643446448805221e-07
+  },
+  "probe_test_examples": 400,
+  "encoder_tokens": 256,
+  "bundle": {
+    "model_version": "gpt2@607a30d783dfa663caf39e06633721c8d4cfcd7e",
+    "layer": 8,
+    "max_length": 128,
+    "pooling": "mean_max",
+    "threshold": 0.5,
+    "sae_id": "ee68542e8e45f3647c9a52cd5ebeefe99094eb7bf2e0b696b2590a5ea9b6fb92",
+    "k": 32,
+    "concept": "pii",
+    "sha256": {
+      "sae-encoder.onnx": "a89a81b84ae6764adc89f1ef186ba51d52f569c34048822ae38f619450c96be9",
+      "pii-raw.onnx": "86fe12ce14cfd99e4d6a7314e3362391d3bef2b00d16f66b635bcf3bd1e6f280",
+      "pii-sae.onnx": "58cf63569cd50a8e55908854d46c22a6c06a5ccf15c46e54a34e8d16bccbe950"
+    }
+  }
+}

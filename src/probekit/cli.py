@@ -12,6 +12,7 @@ from probekit.config import (
     DEFAULT_CONFIG,
     DEFAULT_PROBES_CONFIG,
     DEFAULT_SAE_CONFIG,
+    DEFAULT_SERVE_CONFIG,
     load_config,
     load_yaml,
 )
@@ -197,3 +198,52 @@ def compare(
         data, settings, cfg.seed, provenance, cfg.paths.probe_dir, cfg.paths.runs, concept.value
     )
     typer.echo(str(cfg.paths.runs / "probe-comparison.md"))
+
+
+@app.command()
+def export(
+    config: Path = typer.Option(DEFAULT_CONFIG, "--config"),
+    probes_config: Path = typer.Option(DEFAULT_PROBES_CONFIG, "--probes-config"),
+    serve_config: Path = typer.Option(DEFAULT_SERVE_CONFIG, "--serve-config"),
+    autointerp_config: Path = typer.Option(DEFAULT_AUTOINTERP_CONFIG, "--autointerp-config"),
+    profile: bool = typer.Option(False, "--profile"),
+    concept: Concept = typer.Option(Concept.pii, "--concept"),
+) -> None:
+    """Export both probes and the SAE encoder, and verify numerical parity."""
+    from probekit.autointerp.collector import AutoInterpConfig
+    from probekit.probes.datasets import ProbeConfig, build_dataset
+    from probekit.sae.trainer import save_json
+    from probekit.serve.app import ProbeRuntime, ServeConfig, profile_runtime
+    from probekit.serve.bundle import export_bundle
+
+    cfg = load_config(config)
+    probes = load_yaml(probes_config, ProbeConfig)
+    data, provenance = build_dataset(
+        cfg.model, cfg.paths.sae_checkpoint, probes, cfg.paths.probe_dir
+    )
+    export_bundle(cfg, probes, data, provenance, concept.value)
+    if profile:
+        settings = load_yaml(serve_config, ServeConfig)
+        labels = load_yaml(autointerp_config, AutoInterpConfig)
+        runtime = ProbeRuntime(cfg, settings, labels)
+        texts = [row.text for row in data.rows if row.split == "test"]
+        save_json(cfg.paths.runs / "latency.json", profile_runtime(runtime, texts))
+    typer.echo(str(cfg.paths.probe_dir / "bundle.json"))
+
+
+@app.command()
+def serve(
+    config: Path = typer.Option(DEFAULT_CONFIG, "--config"),
+    serve_config: Path = typer.Option(DEFAULT_SERVE_CONFIG, "--serve-config"),
+    autointerp_config: Path = typer.Option(DEFAULT_AUTOINTERP_CONFIG, "--autointerp-config"),
+) -> None:
+    """Serve an exported ProbeKit bundle with FastAPI."""
+    import uvicorn
+
+    from probekit.autointerp.collector import AutoInterpConfig
+    from probekit.serve.app import ServeConfig, create_app
+
+    cfg = load_config(config)
+    settings = load_yaml(serve_config, ServeConfig)
+    labels = load_yaml(autointerp_config, AutoInterpConfig)
+    uvicorn.run(create_app(cfg, settings, labels), host=settings.host, port=settings.port)
