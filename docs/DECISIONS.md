@@ -21,3 +21,10 @@
 - LM evaluation keeps position zero and padding intact when replacing a layer output. It scores non-padding next-token targets. Loss recovered is undefined when zero ablation does not worsen the clean loss.
 - JBloom's published SAE for `blocks.9.hook_resid_pre` evaluates the same residual location as the output of zero-based GPT-2 block 8. The published Safetensors weights and config are loaded at a pinned revision. Other releases can use the optional SAE Lens SDK.
 - The recorded CPU benchmark uses a 30,000-input-token corpus budget and a smaller dictionary. The default training settings target a larger corpus and dictionary.
+
+## Phase 3
+
+- Live features are sampled with a seeded RNG. Strongest activations are exact within the explanation split. Quantile examples come from a bounded uniform reservoir, so their percentiles are estimates.
+- Detection uses a disjoint sequence-ID split and equal numbers of firing and non-firing target tokens where available. Feature examples show the marked token and neighboring context. A feature without both held-out classes has an undefined score.
+- The cache uses the checkpoint SHA-256 and stores explanations and scores separately. Increment the prompt version when changing prompts or scoring settings for the same checkpoint.
+- The offline provider emits placeholder labels and constant probabilities for smoke testing. The Anthropic-backed path requires `ANTHROPIC_API_KEY`.

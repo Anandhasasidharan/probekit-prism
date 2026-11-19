@@ -1,0 +1,8 @@
+model: claude-haiku-4-5-20251001
+prompt_version: v1
+n_features: 100
+top_examples: 50
+reservoir_size: 2048
+score_examples_per_class: 20
+holdout_fraction: 0.25
+context_tokens: 20

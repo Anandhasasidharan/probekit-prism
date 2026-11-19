@@ -6,7 +6,13 @@ from pathlib import Path
 
 import typer
 
-from probekit.config import DEFAULT_CONFIG, DEFAULT_SAE_CONFIG, load_config, load_yaml
+from probekit.config import (
+    DEFAULT_AUTOINTERP_CONFIG,
+    DEFAULT_CONFIG,
+    DEFAULT_SAE_CONFIG,
+    load_config,
+    load_yaml,
+)
 
 app = typer.Typer(no_args_is_help=True, help="Train and deploy GPT-2 probes.")
 
@@ -39,25 +45,20 @@ def train_sae(
     sae_config: Path = typer.Option(DEFAULT_SAE_CONFIG, "--sae-config"),
 ) -> None:
     """Train and checkpoint a TopK SAE on corpus activations."""
-    import torch
-
+    from probekit.harvest.harvester import resolve_device
     from probekit.sae.trainer import SAEConfig, save_json
     from probekit.sae.trainer import train_sae as fit
 
     cfg = load_config(config)
     settings = load_yaml(sae_config, SAEConfig)
-    device = cfg.model.device
-    if device == "auto":
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-    if device == "cpu":
-        torch.set_num_threads(cfg.model.cpu_threads)
+    device = resolve_device(cfg.model)
     version = f"{cfg.model.name}@{cfg.model.revision}"
     report = fit(
         cfg.paths.activations,
         cfg.paths.sae_checkpoint,
         settings,
         cfg.seed,
-        torch.device(device),
+        device,
         version,
         cfg.model.layer,
     )
@@ -93,3 +94,44 @@ def eval_sae(
     path = cfg.paths.runs / "sae-metrics.json"
     save_json(path, report)
     typer.echo(str(path))
+
+
+@app.command()
+def autointerp(
+    config: Path = typer.Option(DEFAULT_CONFIG, "--config"),
+    autointerp_config: Path = typer.Option(DEFAULT_AUTOINTERP_CONFIG, "--autointerp-config"),
+    n_features: int | None = typer.Option(None, "--n-features", min=1),
+    offline: bool = typer.Option(False, "--offline"),
+) -> None:
+    """Label live features and score held-out detections."""
+    import os
+
+    from transformers import AutoTokenizer
+
+    from probekit.autointerp.cache import checkpoint_id
+    from probekit.autointerp.collector import AutoInterpConfig
+    from probekit.autointerp.explainer import HaikuExplainer, OfflineExplainer
+    from probekit.autointerp.pipeline import autointerpret
+    from probekit.harvest.harvester import resolve_device
+    from probekit.sae.trainer import SAECheckpoint
+
+    cfg = load_config(config)
+    settings = load_yaml(autointerp_config, AutoInterpConfig)
+    if n_features is not None:
+        settings = settings.model_copy(update={"n_features": n_features})
+    if not offline and not os.environ.get("ANTHROPIC_API_KEY"):
+        raise typer.BadParameter("Set ANTHROPIC_API_KEY or use --offline for a smoke run.")
+    tokenizer = AutoTokenizer.from_pretrained(
+        str(cfg.model.local_dir or cfg.model.name), revision=cfg.model.revision
+    )
+    checkpoint = SAECheckpoint.load(cfg.paths.sae_checkpoint, resolve_device(cfg.model))
+    explainer = OfflineExplainer() if offline else HaikuExplainer(settings.model)
+    rows = autointerpret(
+        cfg.paths,
+        checkpoint,
+        checkpoint_id(cfg.paths.sae_checkpoint),
+        tokenizer,
+        explainer,
+        settings,
+    )
+    typer.echo(f"{len(rows)} labels ({explainer.model}) written to {cfg.paths.feature_db}")

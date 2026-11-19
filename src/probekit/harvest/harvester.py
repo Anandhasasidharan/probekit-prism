@@ -54,6 +54,15 @@ def batches(items: Iterable[BatchItem], size: int) -> Iterator[list[BatchItem]]:
         yield batch
 
 
+def resolve_device(config: ModelConfig) -> torch.device:
+    device = config.device
+    if device == "auto":
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+    if device == "cpu":
+        torch.set_num_threads(config.cpu_threads)
+    return torch.device(device)
+
+
 class ActivationHarvester:
     """Capture the output of one zero-based GPT-2 decoder block."""
 
@@ -66,12 +75,7 @@ class ActivationHarvester:
         if config.layer >= len(model.transformer.h):
             raise ValueError(f"Model has no block {config.layer}")
         self.config = config
-        device = config.device
-        if device == "auto":
-            device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.device = torch.device(device)
-        if self.device.type == "cpu":
-            torch.set_num_threads(config.cpu_threads)
+        self.device = resolve_device(config)
         self.model = model.to(self.device).eval()
         self.block = self.model.transformer.h[config.layer]
         self.tokenizer = tokenizer

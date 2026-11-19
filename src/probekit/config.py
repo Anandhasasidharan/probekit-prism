@@ -63,6 +63,7 @@ class Config(Settings):
 
 ConfigType = TypeVar("ConfigType", bound=Settings)
 DEFAULT_CONFIG = Path("configs/default.yaml")
+DEFAULT_AUTOINTERP_CONFIG = Path("configs/autointerp.yaml")
 DEFAULT_SAE_CONFIG = Path("configs/sae_topk.yaml")
 
 
