@@ -6,15 +6,15 @@ __pycache__/
 dist/
 build/
 
-# Data (activations, models, probes)
-data/activations/*
-data/probes/*
-data/saes/*
-data/features/*
-!data/activations/.gitkeep
-!data/probes/.gitkeep
-!data/saes/.gitkeep
-!data/features/.gitkeep
+# Data and reproducible run reports
+data/*
+!data/examples/
+data/examples/*
+!data/examples/*.jsonl
+runs/*
+!runs/*.json
+!runs/*.md
+!runs/*.png
 
 # Environment
 .env
@@ -29,12 +29,3 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
-
-# uv
-data/*
-!data/examples/
-data/examples/*
-!data/examples/*.jsonl
-runs/*
-!runs/*.json
-!runs/*.md

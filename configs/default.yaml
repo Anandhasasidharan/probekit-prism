@@ -10,6 +10,7 @@ model:
 corpus:
   dataset: Salesforce/wikitext
   subset: wikitext-103-raw-v1
+  revision: b08601e04326c79dfdd32d625aee71d232d685c3
   split: train
   text_field: text
   max_tokens: 2000000
