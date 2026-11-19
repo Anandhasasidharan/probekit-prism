@@ -25,3 +25,19 @@ activation data because it can behave as an attention sink. Padding is omitted.
 
 See [implementation decisions](docs/DECISIONS.md) for evaluation and
 reproducibility choices.
+
+## Measured SAE reconstruction
+
+The CPU benchmark used GPT-2 Small at layer 8 and a 30,000-input-token prefix of
+WikiText-103. The TopK checkpoint used a 1,024-feature dictionary. The published
+JBloom SAE was evaluated directly on the Hugging Face residual stream at the
+equivalent hook location. Differences in training corpora, dictionary size,
+and TransformerLens residual conventions limit architectural comparisons.
+
+| SAE | L0 | Reconstruction MSE | Variance explained | Dead features | LM loss recovered |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Trained TopK | 32.00 | 6.216 | 0.370 | 6.74% | 84.06% |
+| JBloom pretrained | 270.32 | 30.259 | -2.067 | 0.24% | 94.78% |
+
+See the saved [harvest](runs/harvest.json), [training](runs/sae-training.json),
+and [held-out evaluation](runs/sae-metrics.json) reports.

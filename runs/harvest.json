@@ -1,0 +1,24 @@
+{
+  "sequences": 481,
+  "activation_rows": 29519,
+  "input_tokens": 30000,
+  "model": {
+    "name": "gpt2",
+    "revision": "607a30d783dfa663caf39e06633721c8d4cfcd7e",
+    "local_dir": null,
+    "layer": 8,
+    "device": "cpu",
+    "max_length": 128,
+    "batch_size": 8,
+    "cpu_threads": 4
+  },
+  "corpus": {
+    "dataset": "Salesforce/wikitext",
+    "subset": "wikitext-103-raw-v1",
+    "split": "train",
+    "text_field": "text",
+    "revision": "b08601e04326c79dfdd32d625aee71d232d685c3",
+    "jsonl": null,
+    "max_tokens": 30000
+  }
+}

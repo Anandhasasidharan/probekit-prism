@@ -63,6 +63,7 @@ class Config(Settings):
 
 ConfigType = TypeVar("ConfigType", bound=Settings)
 DEFAULT_CONFIG = Path("configs/default.yaml")
+DEFAULT_SAE_CONFIG = Path("configs/sae_topk.yaml")
 
 
 def load_yaml(path: str | Path, schema: type[ConfigType]) -> ConfigType:

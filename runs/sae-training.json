@@ -1,0 +1,38 @@
+{
+  "training_tokens": 25933,
+  "scale": 0.1317133098828113,
+  "epochs": [
+    {
+      "epoch": 1,
+      "online_mse": 11.052449254806119,
+      "ever_dead_rate": 0.0283203125
+    },
+    {
+      "epoch": 2,
+      "online_mse": 7.210621812729454,
+      "ever_dead_rate": 0.01953125
+    },
+    {
+      "epoch": 3,
+      "online_mse": 6.139976857883749,
+      "ever_dead_rate": 0.01953125
+    }
+  ],
+  "steps": 348,
+  "seed": 42,
+  "config": {
+    "dict_size": 1024,
+    "k": 32,
+    "target_mean_norm": 16.0,
+    "learning_rate": 0.0003,
+    "batch_size": 256,
+    "epochs": 3,
+    "checkpoint_every": 2000,
+    "holdout_fraction": 0.15,
+    "eval_sequences": 64,
+    "dead_after_steps": 128,
+    "aux_weight": 0.0,
+    "baseline_release": "gpt2-small-res-jb",
+    "baseline_id": "blocks.9.hook_resid_pre"
+  }
+}

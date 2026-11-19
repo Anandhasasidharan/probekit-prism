@@ -1,0 +1,44 @@
+{
+  "model_version": "gpt2@607a30d783dfa663caf39e06633721c8d4cfcd7e",
+  "layer": 8,
+  "device": "cpu",
+  "torch_version": "2.13.0+cu130",
+  "seed": 42,
+  "holdout_fraction": 0.15,
+  "steps": 348,
+  "dict_size": 1024,
+  "k": 32,
+  "topk": {
+    "tokens": 3586,
+    "l0": 32.0,
+    "reconstruction_mse": 6.2162861871553465,
+    "fraction_variance_explained": 0.36991999760203476,
+    "dead_feature_rate": 0.0673828125,
+    "lm_loss": {
+      "clean": 4.249907573758568,
+      "spliced": 5.747791167302604,
+      "zero": 13.648128701463166
+    },
+    "loss_recovered": 0.8406205202888352,
+    "lm_targets": 3319,
+    "lm_sequences": 64
+  },
+  "sae_lens": {
+    "tokens": 3586,
+    "l0": 270.32097044060237,
+    "reconstruction_mse": 30.258827548983188,
+    "fraction_variance_explained": -2.06702129866829,
+    "dead_feature_rate": 0.0024007161458333703,
+    "lm_loss": {
+      "clean": 4.249907573758568,
+      "spliced": 4.740927424693761,
+      "zero": 13.648128701463166
+    },
+    "loss_recovered": 0.94775395851373,
+    "lm_targets": 3319,
+    "lm_sequences": 64,
+    "release": "gpt2-small-res-jb",
+    "id": "blocks.9.hook_resid_pre",
+    "weights_revision": "57d08a4fd333fbf18caf3fbea63ceeb88e2f50d9"
+  }
+}
