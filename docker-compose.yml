@@ -1,0 +1,31 @@
+services:
+  api:
+    build: .
+    environment:
+      CUDA_VISIBLE_DEVICES: ""
+    command:
+      - probekit
+      - serve
+      - --config
+      - ${PROBEKIT_CONFIG:-configs/benchmark_cpu.yaml}
+      - --serve-config
+      - ${PROBEKIT_SERVE_CONFIG:-configs/serve_docker.yaml}
+    ports:
+      - "127.0.0.1:${PROBEKIT_HOST_PORT:-8000}:8000"
+    volumes:
+      - "${PROBEKIT_DATA_DIR:-./data}:/app/data"
+      - ./configs:/app/configs:ro
+      - model_cache:/hf
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "from urllib.request import urlopen; urlopen('http://localhost:8000/health', timeout=5).close()"
+      interval: 10s
+      timeout: 6s
+      retries: 6
+      start_period: 90s
+
+volumes:
+  model_cache:

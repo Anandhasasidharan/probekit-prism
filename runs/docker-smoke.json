@@ -1,0 +1,76 @@
+{
+  "/health": {
+    "status": 200,
+    "data": {
+      "status": "ok",
+      "device": "cpu"
+    }
+  },
+  "/probe": {
+    "status": 200,
+    "data": {
+      "score": 0.9999303817749023,
+      "label": 1,
+      "latency_ms": 71.72662099947047
+    }
+  },
+  "/features/activate": {
+    "status": 200,
+    "data": [
+      {
+        "feature_id": 195,
+        "activation": 4.650331497192383,
+        "label": null
+      },
+      {
+        "feature_id": 524,
+        "activation": 4.584582805633545,
+        "label": null
+      },
+      {
+        "feature_id": 879,
+        "activation": 4.536276340484619,
+        "label": null
+      },
+      {
+        "feature_id": 226,
+        "activation": 4.498291969299316,
+        "label": null
+      },
+      {
+        "feature_id": 141,
+        "activation": 4.138777732849121,
+        "label": null
+      },
+      {
+        "feature_id": 609,
+        "activation": 4.137030124664307,
+        "label": null
+      },
+      {
+        "feature_id": 716,
+        "activation": 4.134974002838135,
+        "label": null
+      },
+      {
+        "feature_id": 37,
+        "activation": 4.097196102142334,
+        "label": null
+      },
+      {
+        "feature_id": 710,
+        "activation": 4.052662372589111,
+        "label": null
+      },
+      {
+        "feature_id": 872,
+        "activation": 4.0090131759643555,
+        "label": null
+      }
+    ]
+  },
+  "runtime": {
+    "torch": "2.13.0+cpu",
+    "cuda": null
+  }
+}

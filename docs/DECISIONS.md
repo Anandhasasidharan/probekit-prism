@@ -42,3 +42,9 @@
 - Each probe graph implements the folded logistic regression with a sigmoid. Export verifies probabilities on the saved test split and the SAE encoder on held-out residuals.
 - Serving defaults to the raw probe based on the measured OOD results. Set the serving space to `sae` to exercise the full SAE-probe inference path. Feature activation always uses the SAE.
 - Application latency includes tokenization, model compute, pooling and the configured inference path. The benchmark measures GPT-2 forward time and probe-only ONNX time separately. HTTP transport and model startup are outside those timings.
+
+## Phase 6
+
+- The tiny runner keeps a single Python process and uses the same stage entry points as Typer. It selects CPU and the explicitly labeled offline AutoInterp provider, then smoke-tests the exported API.
+- The Docker image uses the CPU PyTorch wheel matching the locked PyTorch version. The Compose data bind mount persists SQLite alongside model artifacts, and a second volume caches the Hugging Face model.
+- The integration test builds a tiny local GPT-2 checkpoint. A separate measured shell run uses the pinned GPT-2 Small checkpoint.

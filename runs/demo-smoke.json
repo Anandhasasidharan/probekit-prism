@@ -1,0 +1,14 @@
+{
+  "health": {
+    "status": "ok",
+    "device": "cpu"
+  },
+  "probe": {
+    "score": 0.4754880368709564,
+    "label": 0,
+    "latency_ms": 62.47656100003951
+  },
+  "features_returned": 10,
+  "elapsed_seconds": 87.5787443879999,
+  "autointerp_provider": "offline-placeholder"
+}

@@ -1,0 +1,22 @@
+base_config: default.yaml
+probes_config: probes.yaml
+autointerp_config: autointerp.yaml
+serve_config: serve.yaml
+output: ../data/demo
+token_budget: 1800
+corpus_sequences: 120
+probe_sizes:
+  train: 64
+  val: 24
+  test: 24
+  ood: 24
+sample_sizes: [16, 32, 64]
+sample_seeds: [101, 102]
+sae:
+  dict_size: 128
+  k: 8
+  epochs: 2
+  batch_size: 64
+  checkpoint_every: 0
+  eval_sequences: 12
+autointerp_features: 4
