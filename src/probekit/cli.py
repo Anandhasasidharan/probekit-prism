@@ -2,6 +2,7 @@
 
 import json
 from dataclasses import asdict
+from enum import StrEnum
 from pathlib import Path
 
 import typer
@@ -9,10 +10,21 @@ import typer
 from probekit.config import (
     DEFAULT_AUTOINTERP_CONFIG,
     DEFAULT_CONFIG,
+    DEFAULT_PROBES_CONFIG,
     DEFAULT_SAE_CONFIG,
     load_config,
     load_yaml,
 )
+
+
+class Concept(StrEnum):
+    pii = "pii"
+
+
+class ProbeSpace(StrEnum):
+    raw = "raw"
+    sae = "sae"
+
 
 app = typer.Typer(no_args_is_help=True, help="Train and deploy GPT-2 probes.")
 
@@ -135,3 +147,53 @@ def autointerp(
         settings,
     )
     typer.echo(f"{len(rows)} labels ({explainer.model}) written to {cfg.paths.feature_db}")
+
+
+@app.command()
+def train_probe(
+    config: Path = typer.Option(DEFAULT_CONFIG, "--config"),
+    probes_config: Path = typer.Option(DEFAULT_PROBES_CONFIG, "--probes-config"),
+    concept: Concept = typer.Option(Concept.pii, "--concept"),
+    space: ProbeSpace = typer.Option(ProbeSpace.raw, "--space"),
+) -> None:
+    """Fit one probe and choose C using the validation split."""
+    from probekit.probes.comparator import score_splits
+    from probekit.probes.comparator import train_probe as fit
+    from probekit.probes.datasets import ProbeConfig, build_dataset
+    from probekit.sae.trainer import save_json
+
+    cfg = load_config(config)
+    settings = load_yaml(probes_config, ProbeConfig)
+    data, provenance = build_dataset(
+        cfg.model, cfg.paths.sae_checkpoint, settings, cfg.paths.probe_dir
+    )
+    probe = fit(data, data.indices("train"), settings, space.value, cfg.seed)
+    path = cfg.paths.probe_dir / f"{concept.value}-{space.value}.npz"
+    probe.save(path)
+    report = score_splits(probe, data, space.value, settings)
+    save_json(
+        cfg.paths.runs / f"probe-{concept.value}-{space.value}.json",
+        report | {"provenance": provenance},
+    )
+    typer.echo(str(path))
+
+
+@app.command()
+def compare(
+    config: Path = typer.Option(DEFAULT_CONFIG, "--config"),
+    probes_config: Path = typer.Option(DEFAULT_PROBES_CONFIG, "--probes-config"),
+    concept: Concept = typer.Option(Concept.pii, "--concept"),
+) -> None:
+    """Compare raw and SAE probes on paired ID and OOD splits."""
+    from probekit.probes.comparator import compare as benchmark
+    from probekit.probes.datasets import ProbeConfig, build_dataset
+
+    cfg = load_config(config)
+    settings = load_yaml(probes_config, ProbeConfig)
+    data, provenance = build_dataset(
+        cfg.model, cfg.paths.sae_checkpoint, settings, cfg.paths.probe_dir
+    )
+    benchmark(
+        data, settings, cfg.seed, provenance, cfg.paths.probe_dir, cfg.paths.runs, concept.value
+    )
+    typer.echo(str(cfg.paths.runs / "probe-comparison.md"))

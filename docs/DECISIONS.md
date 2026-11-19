@@ -28,3 +28,10 @@
 - Detection uses a disjoint sequence-ID split and equal numbers of firing and non-firing target tokens where available. Feature examples show the marked token and neighboring context. A feature without both held-out classes has an undefined score.
 - The cache uses the checkpoint SHA-256 and stores explanations and scores separately. Increment the prompt version when changing prompts or scoring settings for the same checkpoint.
 - The offline provider emits placeholder labels and constant probabilities for smoke testing. The Anthropic-backed path requires `ANTHROPIC_API_KEY`.
+
+## Phase 4
+
+- The PII data is a balanced synthetic benchmark with positive and near-miss email, phone, SSN and card-like formats. It uses reserved or invalid identifiers. The regex labels express format resemblance, and the card label checks Luhn. No VeriAlign middleware or real tool-misuse labels were supplied in this repository.
+- The OOD split uses different surrounding templates and changes parts of the value format. Sequence IDs and normalized text are disjoint, and both probe spaces use the same token sequences, pooling, stratified subsets and validation C grid.
+- Standardization is fitted on each training subset and folded into the learned logistic coefficients. Validation AUROC selects C and ties favor the smallest C. Test and OOD scores use a fixed probability threshold. Sample-efficiency dispersion is the population standard deviation over the configured seeds.
+- Counts describe nonzero learned coefficients. Sparse token activations can still produce dense pooled features and probe weights.
